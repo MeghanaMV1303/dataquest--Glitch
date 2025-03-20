@@ -1,0 +1,59 @@
+ import pandas as pd
+
+def clean_users(file_path):
+    df = pd.read_csv(file_path)
+    df.drop_duplicates(subset=['user_id'], inplace=True)  # Remove duplicate users
+    df = df[df['age'].between(10, 100)]  # Remove unrealistic ages
+    df['email'] = df['email'].str.lower()  # Standardize email case
+    df.dropna(subset=['email'], inplace=True)  # Remove rows with missing emails
+    df = df[df['email'].str.match(r"[^@]+@[^@]+\.[^@]+", na=False)]  # Validate email format
+    df.to_csv("users_cleaned.csv", index=False)
+    print(" Users data cleaned successfully!")
+
+clean_users("users.csv")
+ def clean_movies(file_path):
+    df = pd.read_csv(file_path)
+    df.drop_duplicates(subset=['movie_id'], inplace=True)  # Remove duplicate movies
+    df = df[df['release_year'].between(1900, 2025)]  # Valid release years
+    df.to_csv("movies_cleaned.csv", index=False)
+    print("Movies data cleaned successfully!")
+
+clean_movies("movies.csv")
+[20-03-2025 18:01] Megha✧: def clean_subscriptions(file_path, users_file):
+    df = pd.read_csv(file_path)
+    users_df = pd.read_csv(users_file)
+
+    df.drop_duplicates(inplace=True)  # Remove duplicate payments
+    df = df[df['user_id'].isin(users_df['user_id'])]  # Keep only valid user IDs
+    df['payment_date'] = pd.to_datetime(df['payment_date'], errors='coerce')  # Convert to date
+    df.dropna(subset=['payment_date'], inplace=True)  # Remove invalid dates
+    df.to_csv("subscriptions_cleaned.csv", index=False)
+    print("Subscriptions data cleaned successfully!")
+
+clean_subscriptions("subscriptions.csv", "users.csv")
+ def clean_watch_history(file_path, users_file, movies_file):
+    df = pd.read_csv(file_path)
+    users_df = pd.read_csv(users_file)
+    movies_df = pd.read_csv(movies_file)
+
+    df.drop_duplicates(inplace=True)  # Remove duplicates
+    df = df[df['user_id'].isin(users_df['user_id'])]  # Keep valid user IDs
+    df = df[df['movie_id'].isin(movies_df['movie_id'])]  # Keep valid movie IDs
+    df['watch_duration'] = df['watch_duration'].clip(lower=0)  # Ensure non-negative duration
+    df.to_csv("watch_history_cleaned.csv", index=False)
+    print(" Watch history data cleaned successfully!")
+
+clean_watch_history("watch_history.csv", "users.csv", "movies.csv")
+ def clean_ratings(file_path, users_file, movies_file):
+    df = pd.read_csv(file_path)
+    users_df = pd.read_csv(users_file)
+    movies_df = pd.read_csv(movies_file)
+
+    df.drop_duplicates(inplace=True)  # Remove duplicate ratings
+    df = df[df['user_id'].isin(users_df['user_id'])]  # Keep valid user IDs
+    df = df[df['movie_id'].isin(movies_df['movie_id'])]  # Keep valid movie IDs
+    df = df[df['rating'].between(0, 5)]  # Ensure ratings are between 0-5
+    df.to_csv("ratings_cleaned.csv", index=False)
+    print(" Ratings data cleaned successfully!")
+
+clean_ratings("ratings.csv", "users.csv", "movies.csv")
